@@ -1,3 +1,10 @@
+"""Usage:
+    python computeLinearADC_image_torch.py <4Dnifti> <bvalfile> <savedir> ["cuda"] [3Dsegmentation]
+
+    [] - optional arguments
+
+"""
+
 import os 
 import sys
 import time
@@ -264,6 +271,7 @@ if __name__ == '__main__':
     # init variables 
     nz = np.nonzero(im_seg)
     L=len(nz[0])
+    x,y,z,t=im.shape
     adc = np.zeros((x,y,z))
     b0 = np.zeros((x,y,z))
     # cycle through nonzeros

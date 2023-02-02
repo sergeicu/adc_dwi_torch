@@ -1,3 +1,15 @@
+"""Usage:
+
+
+    Args: 
+        discardDirs - number of directions to discard 
+        filename - 4D nifti filename 
+        segname - 3D segmentation filename 
+        bvalsfilename 
+        savedir - save directory 
+"""
+
+
 # Separate error calculation from bootstrap. 
 
 # Predict mse over a mask
@@ -13,13 +25,6 @@ from computeLinearADC_image_torch import *
 
 if __name__ == '__main__':
     
-    """Args: 
-            discardDirs - number of directions to discard 
-            filename - 4D nifti filename 
-            segname - 3D segmentation filename 
-            bvalsfilename 
-            savedir - save directory 
-    """
     
     discardDirs = int(sys.argv[1])
     niftipath = sys.argv[2]
