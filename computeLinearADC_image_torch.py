@@ -201,7 +201,7 @@ def read_nifti(nifti4D):
     assert im.ndim == 4
     assert t > 2, f"We expect all b-values to be in the same place. Currently the 4th dimension is: {t}"
     
-    return im 
+    return im,imo
     
     
 def get_segmentation(im, segfile=None):    
@@ -226,6 +226,20 @@ def get_segmentation(im, segfile=None):
     im_seg[seg>0] = im[seg>0]
     
     return im_seg 
+
+def load_bvals(bvalsfilename):
+    
+    assert os.path.exists(bvalsfilename)
+    
+    # Load bvals 
+    fo = open( bvalsfilename,'r')
+    lines = fo.readlines()
+    fo.close()
+    bvals = [ int(bb) for bb in lines[0].split(' ')]
+    bvals = [round(bval/10)*10 for bval in bvals]
+    
+    return np.array(bvals)
+
 
 def read_bvals(bvalfile):
     # read bvalues
@@ -263,9 +277,10 @@ if __name__ == '__main__':
     savedir=savedir+'/'
 
     # read files 
-    im = read_nifti(nifti4D)    
+    im,imo = read_nifti(nifti4D)    
     im_seg = get_segmentation(im, segfile=None)
-    bvals = read_bvals(bvalfile)    
+    bvals = load_bvals(bvalfile)    
+    assert list(bvals) == sorted(list(set(bvals))), f"\n\nPlease provide an nifti where each bvalue is averaged across repetitions, and a corresponding bvals file. \n i.e. bvals={sorted(list(set(bvals)))}"
     
     
     # init variables 
