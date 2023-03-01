@@ -252,6 +252,29 @@ def read_bvals(bvalfile):
 
     return bvals 
 
+def predict_adc_signal(b0,adc,bvalues): 
+        
+    # make sure bvals are floats 
+    bvalues = np.array(bvalues).astype(b0.dtype)
+    
+    # remove nans in both arrays
+    b0_nans = np.isnan(b0)
+    adc_nans = np.isnan(adc)
+    nans=np.logical_or(b0_nans, adc_nans)
+    b0[nans] = 0 
+    adc[nans] = 0 
+    
+    # get signal estimate from IVIM parameter estimates
+    b0 = b0[...,np.newaxis] #expand with one new axis so that b* parameter can be broadcast
+    adc = adc[...,np.newaxis]
+    x,y,z,t = b0.shape
+
+    bvals = np.array(bvalues)
+    bvals_ = np.tile(bvals,(x,y,z,1))
+
+
+    signal_image = b0*(np.exp(-1*bvals_*adc))
+    return signal_image
 
 ##############################
 # Main
@@ -306,6 +329,7 @@ if __name__ == '__main__':
             [adc_est, b0_est] = computeLinearADC_torch(bvals = bvals,signal = signali)
             adc[xx,yy,zz] = adc_est.numpy()
             b0[xx,yy,zz] = b0_est.numpy()
+        
     elif technique == '2D':
         #from IPython import embed; embed()
         signali = im_seg[nz[0],nz[1],nz[2], :]
@@ -328,6 +352,9 @@ if __name__ == '__main__':
         b0 = torch.reshape(b0_est,(x,y,z))
         adc = adc.cpu()
         b0 = b0.cpu()
+    
+    # predict signal
+    signal_pred=predict_adc_signal(b0.numpy(),adc.numpy(),bvals)
         
         
     timetaken=time.time()-start
@@ -335,4 +362,8 @@ if __name__ == '__main__':
     # save image 
     adco=nb.Nifti1Image(adc,affine=imo.affine,header=imo.header)
     nb.save(adco, savedir+'adc.nii.gz')
+    b0o=nb.Nifti1Image(b0,affine=imo.affine,header=imo.header)
+    nb.save(b0o, savedir+'b0.nii.gz')
+    signal_predo=nb.Nifti1Image(signal_pred,affine=imo.affine,header=imo.header)
+    nb.save(signal_predo, savedir+'signal_pred.nii.gz')
     
